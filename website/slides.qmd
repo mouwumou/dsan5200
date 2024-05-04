@@ -1,0 +1,270 @@
+---
+title: U.S. Clean Energy Production Analysis
+author: 'Frank Dong, Ziyan Di, Jingxi Qiu'
+# format: revealjs
+slide-number: true
+smaller: true
+format:
+  html:
+    code-fold: true
+    page-layout: full
+    theme: litera
+    toc: true
+    # code-summary: "Show the code"
+jupyter: python3
+---
+
+<!-- data reference:
+
+https://www.eia.gov/todayinenergy/detail.php?id=61783
+Hourly Electric Grid Monitor -->
+
+<img src="../img/cleanenergy.jpg" alt="Alt text" style="width:100%; height:auto;">
+
+# How far are we from clean energy?
+As the sun rises over a landscape increasingly dotted with solar panels and wind turbines, a question lingers in the air:
+
+How far are we until clean energy? This story begins with a world in transition, where every watt of power generated from renewables represents a step away from the burden of fossil fuels and towards a sustainable future.
+
+The United States' journey towards clean energy is a story of rapid transformation and significant progress, primarily driven by the expansion of renewable energy sources such as solar and wind energy. The foundation of this transformation is technological progress, significant investment in infrastructure, and supportive policy frameworks that encourage the reduction of greenhouse gas emissions and dependence on fossil fuels.
+
+## Current US Monthly Energy Production From Sources
+
+```{python}
+#| fig-cap: "Please scroll through the figure to see the trend of each source."
+{{< include ../code/current_us_energy_sources.py >}}
+```
+
+- This figure shows the Monthly Energy Production from fossil, renewable, and nuclear sources in the US.
+- The renewable energy sources are increasing, while the fossil fuel sources are increasing highly due to the high demand for energy.
+- We can find that although renewable energy production keeps increasing, it is still far from the fossil fuel sources, but how about the growth rate?
+
+::: aside
+Data source: U.S. Energy Information Administration, TOTAL ENERGY
+:::
+
+## Anually Increase Rate of Energy Production from Sources
+
+```{python}
+#| fig-cap: "Please scroll through the figure to see the trend of each source."
+{{< include ../code/anual_production_growth.py >}}
+
+```
+
+- This figure shows the annual increase rate of energy production from fossil, renewable, and nuclear sources in the US, the bar shows the increase rate of total energy production.
+- We can find that the renewable energy sources have a higher growth rate than the fossil fuel sources, which means that the renewable energy sources are increasing faster than the fossil fuel sources.
+- And the nuclear electric production has a relative small increase rate, which means that the nuclear electric production has not changed much in recent years.
+
+::: aside
+Data source: U.S. Energy Information Administration, TOTAL ENERGY
+:::
+
+
+## There's trend to show renewables have potential to replace fossil fuels over next two years
+
+```{python}
+{{< include ../code/us_electric_generation_trend.py >}}
+```
+
+- This figure shows the trend of the US electric generation by source from 2018 to 2025 predicted by the U.S. Energy Information Administration.
+- We can find that the renewable energy sources are increasing, while the fossil fuel sources are decreasing, which means that the renewable energy sources have the potential to replace fossil fuels over the next two years.
+- The most interesting part of the figure is that the solar energy generation is increasing rapidly, which means that the solar energy generation has a high potential to replace fossil fuels. Also we can find that the battery storage is increasing, battery storage is a key technology to support the solar energy generation.
+- As the EIA said, they believe renewables have the potential to replace fossil fuels over the next two years.
+
+::: aside
+Data source: U.S. Energy Information Administration, SHORT-TERM ENERGY OUTLOOK DATA BROWSER
+:::
+
+## Electric Generation Addiction Plan (2024)
+Solar and battery storage to make up 81% of new U.S. electric-generating capacity in 2024
+
+```{python}
+{{< include ../code/electric_generation_plan_2024.py >}}
+
+```
+
+Solar with battery storage will be the future of electric generation.
+
+
+
+# Lead of Clean Energy - Texas as an Example
+## Elctric generation in one day in Texas {.smaller}
+<!-- -  -->
+<!-- :::: {.columns} -->
+
+
+```{python}
+#| vscode: {languageId: python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+import geopandas as gpd
+
+#| vscode: {languageId: python}
+HEGM = pd.read_excel('../data/Region_TEX.xlsx', sheet_name="Hourly Charts", header=1)
+
+#| vscode: {languageId: python}
+HEGM = HEGM[HEGM["Local time"] > "2024-04-10 00:00:00"]
+HEGM = HEGM[HEGM["Local time"] < "2024-04-17 00:00:00"]
+Hourly = HEGM[["Hour", "Demand", "Net generation", "Coal", "Natural gas", "Petroleum", "Hydro", "Solar", "Wind", "Other"]]
+Hourly.dropna(inplace=True)
+data = Hourly.groupby("Hour").mean().round(1)
+data.reset_index(inplace=True)
+data["all other"] = data["Coal"] + data["Natural gas"] + data["Petroleum"] + data["Other"] + data["Hydro"]
+hours = data['Hour']
+energy_sources = data[['all other', 'Wind', 'Solar']]
+plt.stackplot(hours, energy_sources.T, labels=energy_sources.columns, colors=["gray", "lightblue", "orange"], alpha=1)
+plt.title('daily mean data from 2024.4.10 to 4.16')
+plt.xlabel('Hour of Day')
+plt.ylabel('Energy Generation (MWh)')
+plt.xlim([1, 24])
+plt.xticks([1, 6, 12, 18], ["mid night","6 am", "noon", "6 pm"])
+plt.grid(axis="x")
+plt.ylim([0, 60000])
+plt.tight_layout()
+plt.legend(frameon=False, loc='upper left', labelcolor = "linecolor")
+plt.show()
+```
+<!-- ::: -->
+
+<!-- ::: {.column width="30%"} -->
+
+- Solar Energy provide a significant portion of the total energy generation in Texas.
+- However, the Solar Energy is highly unstable. 
+<!-- :::
+
+:::: -->
+
+
+::: aside
+Data source: U.S. Energy Information Administration, Hourly Electric Grid Monitor
+:::
+::: notes
+
+Note: Other fuels include coal, natural gas, hydropower, and nuclear. Utility-scale solar only. Winter is the full months of December, January, and February. ERCOT=Electric Reliability Council of Texas.
+:::
+<!-- Since Texas is the southest state in the US, with one of the most wind and solar erengy generation.  -->
+
+
+## What is the backup for the Solar?
+
+
+
+```{python}
+#| vscode: {languageId: python}
+HEGM = pd.read_excel('../data/Region_TEX.xlsx', sheet_name="Hourly Charts", header=1)
+HEGM = HEGM[HEGM["Local time"] > "2024-04-7 00:00:00"]
+HEGM = HEGM[HEGM["Local time"] < "2024-04-10 00:00:00"]
+Hourly = HEGM[["Local time", "Net generation", "Coal", "Natural gas", "Petroleum", "Hydro", "Solar", "Wind", "Other"]]
+Hourly.dropna(inplace=True)
+data = Hourly
+data.reset_index(inplace=True)
+
+#| vscode: {languageId: python}
+data["all other"] = data["Coal"] + data["Wind"] + data["Petroleum"] + data["Other"] + data["Hydro"]
+data["sum"] = data["all other"] + data["Solar"] + data["Natural gas"]
+energy_sources = data[['sum', 'Natural gas', 'Solar']]
+plt.figure(figsize=(8, 3))
+
+
+plt.fill_between(data["Local time"], 0, data["sum"], color="gray", label="Total Generation", alpha=0.5)
+plt.plot(data["Local time"], data["Solar"], color="orange", label="Solar Generation")
+plt.plot(data["Local time"], data["Natural gas"], color="tomato", label="Natural Gas Generation")
+plt.title('ERCOT (Texas) hourly electricity generation (midnight Apr 7, 2024 – midnight April 10, 2024)')
+plt.ylabel('Energy Generation (MWh)')
+plt.ylim([0, 60000])
+plt.grid(axis="x")
+plt.xticks([pd.Timestamp('2024-04-07 12:00:00'), pd.Timestamp('2024-04-08 12:00:00'), pd.Timestamp('2024-04-09 12:00:00')], ["4.7", "4.8", "4.9"])
+# plt.xlim("2024-04-7 00:00:00", "2024-04-10 00:00:00")
+plt.xlabel('Date')
+plt.tight_layout()
+plt.legend(frameon=False, loc='upper left', labelcolor = "linecolor")
+plt.show()
+```
+
+<!-- Natural gas filled in most of the drop in solar generation in Texas during April 8 eclipse. and the generation curve shows a slightly decreasing trend, which means that even natural gas generation fill in the drop, the generation is still not enough. 
+
+With a battery storage, the situation might be better.  -->
+
+::: aside
+Data source: U.S. Energy Information Administration, Hourly Electric Grid Monitor
+:::
+::: notes
+On April 8, 2024, a total solar eclipse caused a significant, albeit brief, reduction in sunlight reaching utility-scale solar electric generation plants across its path from Texas to Maine. The impact was particularly pronounced in Texas due to the high amount of solar capacity located within the path of totality.
+
+The Electric Reliability Council of Texas (ERCOT), the key balancing authority for the state, experienced a loss of around 8.9 gigawatts (GW) of solar capacity during the eclipse according to our Hourly Electric Grid Monitor. The decline in solar generation began at 12:20 p.m. central time (CT), with the eclipse concluding in Texas at 3:07 p.m. CT.
+
+In response, the majority of the shortfall in solar generation within ERCOT was compensated for by natural gas-fired generation, which accounted for roughly 80% of the replacement generation on April 8. The EIA’s Hourly Electric Grid Monitor, capturing grid activity over wider time intervals than the ERCOT-specific data, indicated that natural gas power plants ramped up production by an extra 6.2 GW between 1 p.m. CT and 2 p.m. CT, the peak period of the eclipse, to make up for the deficit in solar power. Coal and other sources, predominantly battery storage, contributed an additional 0.8 GW each to help mitigate the impact.
+
+Typically, solar power is the second-largest source of energy in ERCOT during the afternoon hours, following natural gas. On the day of the eclipse, solar generation in Texas was notably lower than the previous day, April 7, and this reduction persisted into April 9 due to continued cloudy weather.
+:::
+
+
+<!-- ## Natural gas filled in most of the drop in solar generation in Texas during April 8 eclipse -->
+
+
+
+
+
+## Electric Generation yearly trend in Texas
+<!-- :::: {.columns} -->
+
+```{python}
+{{< include ../code/tex_yearly_trend.py >}}
+```
+
+* Solar power provide a significant portion of the total energy generation in Texas. 
+* However, it is obviously not the domminiot source of electricity because of its unstablity. 
+
+
+
+# What can we expect clean energy influence on us?
+## EV sales price
+
+
+```{python}
+{{< include ../code/price_map2.py >}}
+
+```
+
+
+::: aside
+Data source: U.S. Energy Information Administration, SHORT-TERM ENERGY OUTLOOK DATA BROWSER
+:::
+
+::: notes
+The map shows the average price of electricity in the U.S. from 2001 to 2024. The price of electricity is measured in cents per kilowatt-hour (kWh). The price of electricity varies across the U.S. due to differences in generation sources, fuel costs, and regional policies.
+
+The price of electricity in the U.S. has generally increased over the past two decades, driven by rising fuel costs, infrastructure investments, and changes in energy policy. However, the price of electricity varies widely across states, with some regions experiencing higher prices due to factors such as limited fuel sources, transmission constraints, and regulatory requirements. Policymakers and stakeholders are exploring ways to reduce the cost of electricity, such as investing in renewable energy sources, improving grid infrastructure, and implementing pricing incentives for EV charging.
+:::
+
+
+# Conclusion
+- This report evaluates the progress of the United States in the future of clean energy, with a focus on significant growth in renewable energy, particularly solar and battery storage, as well as a corresponding decrease in fossil fuel-based power generation. With a significant reduction in dependence on fossil fuels and an increase in renewable energy, energy production in the United States is diversifying. This transformation is driven by technological progress and policy directives.
+- According to EIA's forecast data, it is expected that renewable energy, especially solar and wind energy, will drive most of the growth of the US power sector by 2025 and beyond, reflecting the transformation and transformation of the energy industry.
+- The report cited the possibility of promoting clean energy in the United States by using Texas's new energy layout and supplementary plans as an example. Subsequently, the impact of using clean energy to replace traditional fossil fuel power generation on residents was introduced from a price perspective.
+- The United States is on a path toward a more sustainable energy future, characterized by rapid growth in renewable energy production and a significant decrease in dependence on fossil fuels. Continuous innovation and supportive policies are crucial for maintaining this momentum.
+
+
+
+# References
+
+Total Energy:
+
+- https://www.eia.gov/totalenergy/data/browser
+
+Short Term Energy Outlook:
+
+- https://www.eia.gov/outlooks/steo/data.php
+
+Slides Texas & What is the backup plan: 
+
+- https://www.eia.gov/todayinenergy/detail.php?id=61824
+
+Slides Electric Price Map: 
+
+- https://www.eia.gov/electricity/data/browser/#/topic/7
+
+- https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html
