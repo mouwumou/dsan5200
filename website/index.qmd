@@ -19,7 +19,7 @@ jupyter: python3
 https://www.eia.gov/todayinenergy/detail.php?id=61783
 Hourly Electric Grid Monitor -->
 
-<img src="../img/cleanenergy.jpg" alt="Alt text" style="width:100%; height:auto;">
+![](../img/cleanenergy.jpg)
 
 # How far are we from clean energy?
 As the sun rises over a landscape increasingly dotted with solar panels and wind turbines, a question lingers in the air:
