@@ -10,6 +10,7 @@ format:
     page-layout: full
     theme: litera
     toc: true
+    embed-resources: true
     # code-summary: "Show the code"
 jupyter: python3
 ---
